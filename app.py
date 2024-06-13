@@ -45,9 +45,8 @@ if submit_button:
             FROM mindsdb_youtube.comments AS t 
             JOIN mindsdb.topic_classifier_model AS m 
             JOIN mindsdb.sentiment_classifier_model as s 
-            WHERE t.video_id = '{video_id}' 
-            LIMIT 100;
-        """
+            WHERE t.video_id = '{video_id}' ;
+            """
         ).fetch()
         print("fetched")
         # Convert the results to a DataFrame with specific fields
