@@ -4,7 +4,7 @@ import pandas as pd
 from urllib.parse import urlparse, parse_qs
 import matplotlib.pyplot as plt
 
-# Connects to the specified host and port
+# Connect to the specified host and port
 server = mindsdb_sdk.connect("http://49.13.27.8:47334")
 print("connecting")
 # Get the MindsDB project
@@ -46,7 +46,7 @@ if submit_button:
             JOIN mindsdb.topic_classifier_model AS m 
             JOIN mindsdb.sentiment_classifier_model as s 
             WHERE t.video_id = '{video_id}' 
-            LIMIT 1000;
+            LIMIT 100;
         """
         ).fetch()
         print("fetched")
@@ -75,7 +75,7 @@ if submit_button:
                 channel_info = channel_description_df.iloc[0]
 
                 # Display the results in Streamlit
-                st.title("YouTube Video Comment Analysis")
+                st.title("YouTube Video Analysis")
 
                 # YouTube-like layout for channel information
                 st.header(channel_info["title"])
@@ -92,9 +92,14 @@ if submit_button:
                 )
                 st.write(f"**Description:** {short_description}")
 
+            # Filter for only positive, negative, and neutral sentiments
+            filtered_df = data_handlers_df[
+                data_handlers_df["sentiment"].isin(["positive", "neutral", "negative"])
+            ]
+
             # Calculate sentiment percentages
             sentiment_counts = (
-                data_handlers_df["sentiment"].value_counts(normalize=True) * 100
+                filtered_df["sentiment"].value_counts(normalize=True) * 100
             )
             sentiment_labels = sentiment_counts.index
             sentiment_values = sentiment_counts.values
@@ -112,7 +117,7 @@ if submit_button:
             )  # Equal aspect ratio ensures the pie is drawn as a circle.
 
             # Calculate trending topics
-            topic_counts = data_handlers_df["topic"].value_counts().head(10)
+            topic_counts = filtered_df["topic"].value_counts().head(10)
 
             # Plot trending topics bar chart
             fig2, ax2 = plt.subplots(figsize=(6, 4))
@@ -131,12 +136,11 @@ if submit_button:
                 st.pyplot(fig2)
 
             # Adjust index to start from 1
-            data_handlers_df.index = data_handlers_df.index + 1
+            filtered_df.index = filtered_df.index + 1
 
             st.header("Comments with Sentiment and Topic Classification")
-            st.dataframe(data_handlers_df[["comment", "topic", "sentiment"]])
+            st.dataframe(filtered_df[["comment", "topic", "sentiment"]])
         else:
             st.write("No data found for this video.")
     else:
         st.write("Invalid YouTube URL.")
-
